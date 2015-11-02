@@ -2,11 +2,11 @@ import cv2 as cv
 from VideoPlayer import VideoPlayer
 
 class Scanner:
-    def __init__(self, path, ref_pos, regions):
+    def __init__(self, path, ref_pos, regions, offset):
         self.vp = VideoPlayer(path, False)
         self.vp.seek(ref_pos)
         self.ref = self.vp.frame
-        self.vp.seek(0)
+        self.vp.seek(offset)
         self.regions = regions
 
     def release(self):

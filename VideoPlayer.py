@@ -14,6 +14,7 @@ class VideoPlayer:
         self.regions = []
         self.cap = cv.VideoCapture(path)
         self.seek(0)
+        self.text = ""
 
         cv.namedWindow(self.win_name, cv.WINDOW_AUTOSIZE)
         if enable_mouse:
@@ -29,26 +30,22 @@ class VideoPlayer:
             temp = self.frame.copy()
             for r in self.regions:
                 cv.rectangle(temp, r[0], r[1], (0,255,0),2)
-            self.set_text(str(timedelta(milliseconds=self.get_pos())))
-            cv.putText(temp, self.text, (100,50), cv.FONT_HERSHEY_SIMPLEX, 2, (0,255,0))
+            text = "{0},{1}".format(str(timedelta(milliseconds=self.get_pos())),self.text) 
+            cv.putText(temp, text, (100,50), cv.FONT_HERSHEY_SIMPLEX, 2, (0,255,0))
             cv.imshow(self.win_name,temp)
 
     def next(self):
              ret, self.frame = self.cap.read()
              if ret:
                  self.frame = cv.resize(self.frame, (0,0), fx=0.5, fy=0.5 )
-             #self.set_text("{0}".format(self.get_pos()))
              return ret
              
     def step( self, msec = 500 ):
         self.cap.set(cv.CAP_PROP_POS_MSEC, self.get_pos()+msec)
-        #self.set_text("{0}".format(self.get_pos()))
         return self.next()
 
     def seek(self, msec ):
         self.cap.set(cv.CAP_PROP_POS_MSEC, msec)
-        self.set_text(str(timedelta(milliseconds=self.get_pos())))
-        #self.set_text("{0}:{1:.02f}".format(int(self.get_pos()/60000),(self.get_pos()%60000 ))
         return self.next()
 
     def set_text( self, text ):

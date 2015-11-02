@@ -21,7 +21,7 @@ x_scale=0.5
 y_scale=0.5
 threshold=30
 
-f = 'c:\\builds\\junk\\GOPR0113.MP4'
+f = 'c:\\builds\\opencv\\hammy\\left.mp4'
 #f = 'f:\\Videos\\PW03\\20151010-PDX3-WH5\\orig\\left\\GOPR0114.MP4'
 #f = 'f:\\test.avi'
 cap = cv2.VideoCapture(f)
@@ -44,7 +44,7 @@ cv2.namedWindow( "thumb" )
 cutlist = []
 
 while(1):
-    #cap.set(cv2.CAP_PROP_POS_MSEC, pos + step_ms )
+    cap.set(cv2.CAP_PROP_POS_MSEC, pos + step_ms )
     pos = cap.get(cv2.CAP_PROP_POS_MSEC)
     ret, frame = cap.read()
     if not ret:
@@ -66,14 +66,14 @@ while(1):
             crops[1].crop.mean(), crops[1].crop.sum(), pos ))
     if not capturing:
         for c in crops:
-            if c.crop.mean() > 2:
+            if c.crop.mean() > 4:
                 capturing=True
                 startTime = pos;
                 break
     else:
         stop_capturing = True
         for c in crops:
-            if c.crop.mean() > 2:
+            if c.crop.mean() > 4:
                 stop_capturing = False
                 break
         if stop_capturing:
@@ -112,6 +112,8 @@ cutlist = [ x for x in cutlist if x[1]-x[0] > 1000*5 ]
 #Print the list.
 for i in cutlist:
     print( "segment ({0:.0f},{1:.0f} )".format(i[0]/1000, i[1]/1000) )
+
+
 
 cap.release()
 cv2.destroyAllWindows()
