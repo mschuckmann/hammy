@@ -1,0 +1,5 @@
+export PATH=/cygdrive/c/Python34:$PATH
+alias hammy='python c:\\builds\\opencv\\hammy\\Hammy.py'
+alias preview='python c:\\builds\\opencv\\hammy\\Preview.py'
+alias review='python c:\\builds\\opencv\\hammy\\Review.py'
+alias make_cuts='python c:\\builds\\opencv\\hammy\\make_cuts.py'

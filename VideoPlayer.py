@@ -4,17 +4,24 @@ from operator import itemgetter
 from datetime import timedelta
 
 class VideoPlayer:
-    def __init__(self, path, enable_mouse = True, window_name = None):
+    def __init__(self, path, enable_mouse = True, window_name = None, gBlur = False):
         if not window_name:
             self.win_name = path
         else:
             self.win_name = window_name
-            
+
+        print( "gBlur = {0}".format(gBlur) )
+        self.gaussianBlur = gBlur
+        if self.gaussianBlur:
+            print( "GUASIANBLUR is on" )
         self.path = path
         self.regions = []
         self.cap = cv.VideoCapture(path)
+        self.position = 0
         self.seek(0)
         self.text = ""
+        self.frame = None
+        
 
         cv.namedWindow(self.win_name, cv.WINDOW_AUTOSIZE)
         if enable_mouse:
@@ -35,17 +42,22 @@ class VideoPlayer:
             cv.imshow(self.win_name,temp)
 
     def next(self):
-             ret, self.frame = self.cap.read()
-             if ret:
-                 self.frame = cv.resize(self.frame, (0,0), fx=0.5, fy=0.5 )
-             return ret
+        ret, self.frame = self.cap.read()
+        if ret:
+            if self.gaussianBlur:
+                self.frame = cv.GaussianBlur(self.frame, (21, 21), 0)
+            self.frame = cv.resize(self.frame, (0,0), fx=0.5, fy=0.5 )
+        self.position = self.cap.get(cv.CAP_PROP_POS_MSEC)
+        return ret
              
     def step( self, msec = 500 ):
-        self.cap.set(cv.CAP_PROP_POS_MSEC, self.get_pos()+msec)
+        self.position += msec
+        self.cap.set(cv.CAP_PROP_POS_MSEC, self.position)
         return self.next()
 
     def seek(self, msec ):
-        self.cap.set(cv.CAP_PROP_POS_MSEC, msec)
+        self.position = msec
+        self.cap.set(cv.CAP_PROP_POS_MSEC, self.position)
         return self.next()
 
     def set_text( self, text ):
@@ -68,16 +80,16 @@ class VideoPlayer:
         return self.regions
     
     def get_pos(self):
-        return self.cap.get(cv.CAP_PROP_POS_MSEC)
+        return self.position #self.cap.get(cv.CAP_PROP_POS_MSEC)
 
     def clip_and_crop(self, event, x, y, flags, param ):
         # if the left mouse button was clicked, record the starting
-	# (x, y) coordinates and indicate that cropping is being
-	# performed
+        # (x, y) coordinates and indicate that cropping is being
+        # performed
         if event == cv.EVENT_LBUTTONDOWN:
             self.regions.append([(x, y)])
- 
-	# check to see if the left mouse button was released
+
+        # check to see if the left mouse button was released
         elif event == cv.EVENT_LBUTTONUP:
             
             # record the ending (x, y) coordinates and indicate that

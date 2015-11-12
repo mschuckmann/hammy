@@ -25,11 +25,6 @@ def parse_args():
                         help='Set the file to write the cut list to')
     parser.add_argument('--step_msec', required=False, default=500, type=int,
                         help='Set the step size when scanning through the files')
-    parser.add_argument('--left_offset', required=False, default=0, type=int,
-                        help="Sets an offset in msec to add to all seeks")
-    parser.add_argument('--right_offset', required=False, default=0, type=int,
-                        help="Sets an offset in msec to add to all seeks")
-
 
     opts = parser.parse_args()
     return opts
@@ -112,8 +107,8 @@ def main():
             r_pos = json_data['pos']
             r_regions = json_data['regions']
 
-    l_scanner = Scanner(opts.left, l_pos, l_regions, opts.left_offset )
-    r_scanner = Scanner(opts.right, r_pos, r_regions, opts.right_offset )
+    l_scanner = Scanner(opts.left, l_pos, l_regions )
+    r_scanner = Scanner(opts.right, r_pos, r_regions )
 
     l_avg = MovingAverageFilter(1, 0)
     r_avg = MovingAverageFilter(1, 0)
@@ -124,12 +119,13 @@ def main():
     start = timer()
     cutlist = []
     while True:
-        l_score = l_avg(l_scanner.score())
-        r_score = r_avg(r_scanner.score())
+        l_score = l_scanner.score() #l_avg()
+        r_score = r_scanner.score()#r_avg()
         pos = l_scanner.vp.get_pos()
 
-
-        print( "scores:({2:.2f},{0:.2f},{1:.2f})".format(l_score, r_score, pos ) )
+        l_scanner.vp.set_text("{0:.2f}".format(l_score))
+        r_scanner.vp.set_text("{0:.2f}".format(r_score))
+        print( "scores:({0:.2f}, {1:.2f}, {2:.2f})".format(pos, l_score, r_score ) )
 
         if l_score > r_score:
             recording = opts.left
@@ -139,10 +135,8 @@ def main():
         if not cutlist:
             cutlist = [[recording, 0, True]]
         else:
-        #    cutlist[-1] = cutlist[-1][:2] + (pos,)
-
             if recording != cutlist[-1][FILE]:
-                cutlist.append([recording, pos, True])
+                cutlist.append([recording, max(0,pos-1000), True])
 
         #Step to the next frame.
         if (not l_scanner.step(opts.step_msec)) or (not r_scanner.step(opts.step_msec)):
